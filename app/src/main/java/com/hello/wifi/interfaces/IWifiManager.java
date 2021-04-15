@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 
 public interface IWifiManager {
-    void init(Application application, IWifiManagerListener iWifiManagerListener);
+    void init(Application application, IWifiLogListener iWifiLogListener);
     void openWifi();  //打开Wifi
     void openWifiSettingPage(Activity activity); //打开wifi设置页面
     void closeWifi(); //关闭wifi

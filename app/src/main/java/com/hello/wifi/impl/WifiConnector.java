@@ -1,4 +1,4 @@
-package com.hello.wifi.utils;
+package com.hello.wifi.impl;
 
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
@@ -6,32 +6,81 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
-import android.util.Log;
+
+import com.hello.wifi.interfaces.IWifiLogListener;
 
 import java.util.List;
 
-public class WifiConnector {
-    Handler mHandler = new Handler(Looper.getMainLooper()) {
+ class WifiConnector {
+
+    private IWifiLogListener logListener;
+    private WifiManager wifiManager;
+
+    private Handler mHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            Log.i("TAG", "handleMessage: WifiConnector " + msg.obj);
+            if (logListener != null) {
+                switch (msg.what) {
+                    case 0:
+                        logListener.onSuccess("WifiConnector connect success = " + msg.obj);
+                        break;
+                    case -1:
+                        logListener.onFail("WifiConnector connect fail = " + msg.obj);
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
     };
-    WifiManager wifiManager;
+
+
+    public void init(WifiManager wifiManager, IWifiLogListener iWifiLogListener) {
+        if (wifiManager == null) {
+            throw new IllegalArgumentException("WifiConnector wifiManager cant be null!");
+        }
+        if (iWifiLogListener == null) {
+            throw new IllegalArgumentException("WifiConnector iWifiLogListener cant be null!");
+        }
+        this.wifiManager = wifiManager;
+        this.logListener = iWifiLogListener;
+    }
+
+
+    private void checkInit() {
+        if (logListener == null || wifiManager == null) {
+            throw new IllegalArgumentException("You must call init()  before other methods!");
+        }
+    }
+
 
     /**
-     * 向UI发送消息
+     * 子线程要向UI发送连接失败的消息
      *
      * @param info 消息
      */
-    public void sendMsg(String info) {
+    public void sendErrorMsg(String info) {
         if (mHandler != null) {
             Message msg = new Message();
             msg.obj = info;
+            msg.what = -1;
             mHandler.sendMessage(msg);// 向Handler发送消息
-        } else {
-            Log.e("wifi sendMsg", info);
+        }
+    }
+
+
+    /**
+     * 子线程向UI主线程发送连接成功的消息
+     *
+     * @param info
+     */
+    public void sendSuccessMsg(String info) {
+        if (mHandler != null) {
+            Message msg = new Message();
+            msg.obj = info;
+            msg.what = 0;
+            mHandler.sendMessage(msg);// 向Handler发送消息
         }
     }
 
@@ -40,10 +89,6 @@ public class WifiConnector {
         WIFICIPHER_WEP, WIFICIPHER_WPA, WIFICIPHER_NOPASS, WIFICIPHER_INVALID
     }
 
-    // 构造函数
-    public WifiConnector(WifiManager wifiManager) {
-        this.wifiManager = wifiManager;
-    }
 
     // 提供一个外部接口，传入要连接的无线网
     public void connect(String ssid, String password, WifiCipherType type) {
@@ -53,6 +98,7 @@ public class WifiConnector {
 
     // 查看以前是否也配置过这个网络
     private WifiConfiguration isExsits(String SSID) {
+        checkInit();
         List<WifiConfiguration> existingConfigs = wifiManager
                 .getConfiguredNetworks();
         for (WifiConfiguration existingConfig : existingConfigs) {
@@ -65,6 +111,7 @@ public class WifiConnector {
 
     private WifiConfiguration createWifiInfo(String SSID, String Password,
                                              WifiCipherType Type) {
+        checkInit();
         WifiConfiguration config = new WifiConfiguration();
         config.allowedAuthAlgorithms.clear();
         config.allowedGroupCiphers.clear();
@@ -112,6 +159,7 @@ public class WifiConnector {
 
     // 打开wifi功能
     private boolean openWifi() {
+        checkInit();
         boolean bRet = true;
         if (!wifiManager.isWifiEnabled()) {
             bRet = wifiManager.setWifiEnabled(true);
@@ -134,43 +182,41 @@ public class WifiConnector {
 
         @Override
         public void run() {
+            checkInit();
             try {
                 // 如果之前没打开wifi,就去打开  确保wifi开关开了
                 openWifi();
                 Thread.sleep(200);
-                // 开启wifi功能需要一段时间(我在手机上测试一般需要1-3秒左右)，所以要等到wifi
-                // 状态变成WIFI_STATE_ENABLED的时候才能执行下面的语句
+                // 开启wifi功能需要一段时间,每隔100ms检测一次，WIFI可用了就继续下面的操作
                 while (wifiManager.getWifiState() == WifiManager.WIFI_STATE_ENABLING) {
                     try {
                         // 为了避免程序一直while循环，让它睡个100毫秒检测……
                         Thread.sleep(100);
                     } catch (InterruptedException ie) {
+                        sendErrorMsg("ConnectRunnable InterruptedException =" + ie.getMessage());
                     }
                 }
 
-                WifiConfiguration wifiConfig = createWifiInfo(ssid, password,
-                        type);
-                //
+                //根据传入的ssid pwd type创建 wifi config
+                WifiConfiguration wifiConfig = createWifiInfo(ssid, password, type);
+
                 if (wifiConfig == null) {
-                    sendMsg("wifiConfig is null!");
+                    sendErrorMsg("wifiConfig is null!");
                     return;
                 }
 
                 WifiConfiguration tempConfig = isExsits(ssid);
-
+                //之前如果存在的网络, 那就删除掉重新连接一次 ,确保最新的ssid 和 pws
                 if (tempConfig != null) {
                     wifiManager.removeNetwork(tempConfig.networkId);
                 }
 
                 int netID = wifiManager.addNetwork(wifiConfig);
                 boolean enabled = wifiManager.enableNetwork(netID, true);
-                sendMsg("enableNetwork status enable=" + enabled);
                 boolean connected = wifiManager.reconnect();
-                sendMsg("enableNetwork connected=" + connected);
-                sendMsg("连接成功!");
+                sendSuccessMsg("连接成功! enabled = " + enabled + " connected  =" + connected);
             } catch (Exception e) {
-                // TODO: handle exception
-                sendMsg(e.getMessage());
+                sendErrorMsg(e.getMessage());
                 e.printStackTrace();
             }
         }

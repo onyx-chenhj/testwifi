@@ -10,8 +10,7 @@ import android.provider.Settings;
 import android.text.TextUtils;
 
 import com.hello.wifi.interfaces.IWifiManager;
-import com.hello.wifi.interfaces.IWifiManagerListener;
-import com.hello.wifi.utils.WifiConnector;
+import com.hello.wifi.interfaces.IWifiLogListener;
 
 public class WifiManagerProxy implements IWifiManager {
 
@@ -28,8 +27,8 @@ public class WifiManagerProxy implements IWifiManager {
 
 
     private WifiManager manager;
-    private Context mContext;
-    private IWifiManagerListener mListener;
+    private WifiConnector mConnector = new WifiConnector();
+    private IWifiLogListener mListener;
 
 
     private void checkInit() {
@@ -40,19 +39,19 @@ public class WifiManagerProxy implements IWifiManager {
 
 
     @Override
-    public void init(Application application, IWifiManagerListener iWifiManagerListener) {
+    public void init(Application application, IWifiLogListener iWifiLogListener) {
         if (application == null) {
             throw new IllegalArgumentException("Application cant be null!");
         }
-        if (iWifiManagerListener == null) {
-            throw new IllegalArgumentException("IWifiManagerListener cant be null!");
+        if (iWifiLogListener == null) {
+            throw new IllegalArgumentException("IWifiLogListener cant be null!");
         }
         if (manager == null) {
-            mContext = application;
             manager = (WifiManager) application.getSystemService(Context.WIFI_SERVICE);
+            mConnector.init(manager, iWifiLogListener);
         }
         if (mListener == null) {
-            mListener = iWifiManagerListener;
+            mListener = iWifiLogListener;
         }
     }
 
@@ -92,18 +91,23 @@ public class WifiManagerProxy implements IWifiManager {
     @Override
     public void connect(String ssId, String pwd) {
         checkInit();
-        WifiConnector connector = new WifiConnector(manager);
-        connector.connect("869455049330216", "12345678", WifiConnector.WifiCipherType.WIFICIPHER_WPA);
+        mConnector.connect(ssId, pwd, WifiConnector.WifiCipherType.WIFICIPHER_WPA);
     }
 
     @Override
     public void disConnect(String ssId) {
         checkInit();
+        if (TextUtils.isEmpty(ssId)) {
+            mListener.onFail("disConnect fail = 未指定对应的SSID!");
+            return;
+        }
         ssId = "\"" + ssId + "\"";
         WifiInfo wifiInfo = manager.getConnectionInfo();
-        if (!TextUtils.isEmpty(ssId) && TextUtils.equals(ssId, wifiInfo.getSSID())) {
+        if (wifiInfo != null && !TextUtils.isEmpty(ssId) && TextUtils.equals(ssId, wifiInfo.getSSID())) {
             int netId = wifiInfo.getNetworkId();
             manager.disableNetwork(netId);
+        } else {
+            mListener.onFail("disConnect fail = wifi异常  或者 此时就没有连接上对应的SSID ！");
         }
     }
 
