@@ -1,10 +1,7 @@
-package com.hello.wifi.api;
+package com.hello.wifi.interfaces;
 
 import android.app.Activity;
 import android.app.Application;
-import android.net.wifi.ScanResult;
-
-import java.util.List;
 
 public interface IWifiManager {
     void init(Application application, IWifiManagerListener iWifiManagerListener);
@@ -13,5 +10,6 @@ public interface IWifiManager {
     void closeWifi(); //关闭wifi
     boolean isWifiEnabled(); //判断wifi是否可用
 
-    List<ScanResult> getScanResults(); //获取Wifi扫描列表
+    void connect(String ssId,String pwd); //连接wifi
+    void disConnect(String ssId); // 断开某个网络
 }

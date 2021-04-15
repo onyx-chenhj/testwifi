@@ -1,15 +1,11 @@
 package com.hello.wifi;
 
-import android.net.wifi.ScanResult;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.hello.wifi.api.IWifiManagerListener;
+import com.hello.wifi.interfaces.IWifiManagerListener;
 import com.hello.wifi.impl.WifiManagerProxy;
-
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,7 +24,14 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        List<ScanResult> scanResults = WifiManagerProxy.get().getScanResults();
-        Log.i("TAG", "onCreate: size = "+scanResults.size());
+        WifiManagerProxy.get().connect("","");
+        try {
+            Thread.sleep(10000);
+            WifiManagerProxy.get().disConnect("869455049330216");
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
 }

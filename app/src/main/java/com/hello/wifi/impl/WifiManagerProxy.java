@@ -1,23 +1,17 @@
 package com.hello.wifi.impl;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.wifi.ScanResult;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.provider.Settings;
-import android.widget.Toast;
+import android.text.TextUtils;
 
-import androidx.core.app.ActivityCompat;
-
-import com.hello.wifi.api.IWifiManager;
-import com.hello.wifi.api.IWifiManagerListener;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.hello.wifi.interfaces.IWifiManager;
+import com.hello.wifi.interfaces.IWifiManagerListener;
+import com.hello.wifi.utils.WifiConnector;
 
 public class WifiManagerProxy implements IWifiManager {
 
@@ -36,6 +30,13 @@ public class WifiManagerProxy implements IWifiManager {
     private WifiManager manager;
     private Context mContext;
     private IWifiManagerListener mListener;
+
+
+    private void checkInit() {
+        if (manager == null || mListener == null) {
+            throw new IllegalArgumentException("You must call init()  before other methods!");
+        }
+    }
 
 
     @Override
@@ -89,24 +90,21 @@ public class WifiManagerProxy implements IWifiManager {
     }
 
     @Override
-    public List<ScanResult> getScanResults() {
+    public void connect(String ssId, String pwd) {
         checkInit();
-        boolean hasLocationPermission = ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-        if (hasLocationPermission) {
-            return manager.getScanResults();
-        } else {
-//            String[] permissions = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
-//            ActivityCompat.re(mContext, permissions, 0);
-            Toast.makeText(mContext, "没有定位权限无法获取!", Toast.LENGTH_LONG).show();
-            mListener.onFail("没有获取定位权限，无法查看Wifi列表!");
-            return new ArrayList<>();
+        WifiConnector connector = new WifiConnector(manager);
+        connector.connect("869455049330216", "12345678", WifiConnector.WifiCipherType.WIFICIPHER_WPA);
+    }
+
+    @Override
+    public void disConnect(String ssId) {
+        checkInit();
+        ssId = "\"" + ssId + "\"";
+        WifiInfo wifiInfo = manager.getConnectionInfo();
+        if (!TextUtils.isEmpty(ssId) && TextUtils.equals(ssId, wifiInfo.getSSID())) {
+            int netId = wifiInfo.getNetworkId();
+            manager.disableNetwork(netId);
         }
     }
 
-    private void checkInit() {
-        if (manager == null || mListener == null) {
-            throw new IllegalArgumentException("You must call init()  before other methods!");
-        }
-
-    }
 }
