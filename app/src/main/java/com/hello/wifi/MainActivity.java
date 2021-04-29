@@ -1,12 +1,11 @@
 package com.hello.wifi;
 
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import com.hello.wifi.interfaces.IWifiLogListener;
 import com.hello.wifi.impl.WifiManagerProxy;
+import com.hello.wifi.interfaces.IWifiLogListener;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -17,7 +16,7 @@ public class MainActivity extends AppCompatActivity {
         WifiManagerProxy.get().init(getApplication(), new IWifiLogListener() {
             @Override
             public void onSuccess(String result) {
-                Log.i("MainActivity", "onSuccess: "+result);
+                Log.i("MainActivity", "onSuccess: " + result);
             }
 
             @Override
@@ -33,6 +32,13 @@ public class MainActivity extends AppCompatActivity {
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        WifiManagerProxy.get().disConnect("869455049330216");
 
     }
 }
