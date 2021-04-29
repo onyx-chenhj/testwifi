@@ -26,13 +26,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         WifiManagerProxy.get().connect("869455049330216", "12345678");
-        try {
-            Thread.sleep(10000);
-            WifiManagerProxy.get().disConnect("869455049330216");
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            Thread.sleep(10000);
+//            WifiManagerProxy.get().disConnect("869455049330216");
+//
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
     }
 }
