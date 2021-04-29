@@ -103,9 +103,9 @@ public class WifiManagerProxy implements IWifiManager {
         }
         ssId = "\"" + ssId + "\"";
         WifiInfo wifiInfo = manager.getConnectionInfo();
-        if (wifiInfo != null && !TextUtils.isEmpty(ssId) && TextUtils.equals(ssId, wifiInfo.getSSID())) {
+        if (wifiInfo != null && !TextUtils.isEmpty(ssId)) {
             int netId = wifiInfo.getNetworkId();
-            manager.disableNetwork(netId);
+            manager.removeNetwork(netId);
         } else {
             mListener.onFail("disConnect fail = wifi异常  或者 此时就没有连接上对应的SSID ！");
         }
