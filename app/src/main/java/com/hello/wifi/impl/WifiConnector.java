@@ -1,5 +1,6 @@
 package com.hello.wifi.impl;
 
+import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
@@ -9,9 +10,10 @@ import android.text.TextUtils;
 
 import com.hello.wifi.interfaces.IWifiLogListener;
 
+import java.util.ArrayList;
 import java.util.List;
 
- class WifiConnector {
+class WifiConnector {
 
     private IWifiLogListener logListener;
     private WifiManager wifiManager;
@@ -202,6 +204,27 @@ import java.util.List;
 
                 if (wifiConfig == null) {
                     sendErrorMsg("wifiConfig is null!");
+                    return;
+                }
+
+                // 重新扫描下最新的wifi信息，防止wifi信息已经变了但是 getScanResults还是使用旧的wifi信息
+                wifiManager.startScan();
+                // 线程休眠0.5秒  等待最新的扫描结果出来
+                Thread.sleep(500);
+                List<ScanResult> scanResults = wifiManager.getScanResults();
+                if (scanResults == null) {
+                    sendErrorMsg("没有扫描到可用的网络!");
+                    return;
+                }
+
+                List<String> ssIdList = new ArrayList<>();
+                for (int i = 0; i < scanResults.size(); i++) {
+                    ScanResult scanResult = scanResults.get(i);
+                    ssIdList.add(scanResult.SSID);
+                }
+
+                if(!ssIdList.contains(ssid)){
+                    sendErrorMsg("不存在指定SSID的 网络!");
                     return;
                 }
 

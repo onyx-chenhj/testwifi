@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("MainActivity", "onFail: " + reason);
             }
         });
-        WifiManagerProxy.get().connect("869455049330216", "12345678");
+        WifiManagerProxy.get().connect("HugoiPhone", "12345678");
 //        try {
 //            Thread.sleep(10000);
 //            WifiManagerProxy.get().disConnect("869455049330216");
@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        WifiManagerProxy.get().disConnect("869455049330216");
+        WifiManagerProxy.get().disConnect("HugoiPhone");
 
     }
 }
