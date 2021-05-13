@@ -1,13 +1,9 @@
 package com.hello.wifi;
 
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
-import androidx.appcompat.app.AppCompatActivity;
 
-import com.hello.wifi.impl.WifiManagerProxy;
-import com.thanosfisherman.wifiutils.WifiUtils;
-import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
-import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
 
-       // WIFIConnectionManager.getInstance(this).connect("869455049330216", "12345678");
+        // WIFIConnectionManager.getInstance(this).connect("869455049330216", "12345678");
         //WifiManagerProxy.get().connect("869455049330216", "12345678");
 //        try {
 //            Thread.sleep(10000);
@@ -37,27 +33,27 @@ public class MainActivity extends AppCompatActivity {
 //            e.printStackTrace();
 //        }
 
-        WifiUtils.withContext(getApplicationContext())
-                .connectWith("869455049330216","12345678")
-                .onConnectionResult(new ConnectionSuccessListener() {
-                    @Override
-                    public void success() {
-
-                    }
-
-                    @Override
-                    public void failed(ConnectionErrorCode errorCode) {
-
-                    }
-                })
-                .start();
+        String ssid = "102"; // 869455049330216
+        String pwd = "4001001111";
+//        WifiUtils.withContext(getApplicationContext())
+//                .connectWith(ssid, pwd)
+//                .onConnectionResult(new ConnectionSuccessListener() {
+//                    @Override
+//                    public void success() {
+//                        Toast.makeText(MainActivity.this, "success", Toast.LENGTH_SHORT).show();
+//                    }
+//
+//                    @Override
+//                    public void failed(ConnectionErrorCode errorCode) {
+//                        Toast.makeText(MainActivity.this, "failed: = " + errorCode, Toast.LENGTH_SHORT).show();
+//                    }
+//                })
+//                .start();
 
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        WifiManagerProxy.get().disConnect("869455049330216");
-
     }
 }

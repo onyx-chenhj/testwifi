@@ -16,6 +16,9 @@
         android:theme="@style/Theme.AppCompat.Light"
         android:supportsRtl="true">
         <activity android:name=".MainActivity">
+
+        </activity>
+        <activity android:name=".demo1.Demo1Activity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
