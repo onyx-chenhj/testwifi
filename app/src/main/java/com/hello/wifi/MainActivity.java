@@ -1,12 +1,13 @@
 package com.hello.wifi;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
-import com.hello.wifi.impl.WIFIConnectionManager;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.hello.wifi.impl.WifiManagerProxy;
-import com.hello.wifi.interfaces.IWifiLogListener;
+import com.thanosfisherman.wifiutils.WifiUtils;
+import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode;
+import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -14,19 +15,19 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        WifiManagerProxy.get().init(getApplication(), new IWifiLogListener() {
-            @Override
-            public void onSuccess(String result) {
-                Log.i("MainActivity", "onSuccess: " + result);
-            }
+//        WifiManagerProxy.get().init(getApplication(), new IWifiLogListener() {
+//            @Override
+//            public void onSuccess(String result) {
+//                Log.i("MainActivity", "onSuccess: " + result);
+//            }
+//
+//            @Override
+//            public void onFail(String reason) {
+//                Log.i("MainActivity", "onFail: " + reason);
+//            }
+//        });
 
-            @Override
-            public void onFail(String reason) {
-                Log.i("MainActivity", "onFail: " + reason);
-            }
-        });
-
-        WIFIConnectionManager.getInstance(this).connect("869455049330216", "12345678");
+       // WIFIConnectionManager.getInstance(this).connect("869455049330216", "12345678");
         //WifiManagerProxy.get().connect("869455049330216", "12345678");
 //        try {
 //            Thread.sleep(10000);
@@ -35,6 +36,21 @@ public class MainActivity extends AppCompatActivity {
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
+
+        WifiUtils.withContext(getApplicationContext())
+                .connectWith("869455049330216","12345678")
+                .onConnectionResult(new ConnectionSuccessListener() {
+                    @Override
+                    public void success() {
+
+                    }
+
+                    @Override
+                    public void failed(ConnectionErrorCode errorCode) {
+
+                    }
+                })
+                .start();
 
     }
 
