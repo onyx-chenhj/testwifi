@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.hello.wifi.impl.WIFIConnectionManager;
 import com.hello.wifi.impl.WifiManagerProxy;
 import com.hello.wifi.interfaces.IWifiLogListener;
 
@@ -24,7 +25,9 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("MainActivity", "onFail: " + reason);
             }
         });
-        WifiManagerProxy.get().connect("HugoiPhone", "12345678");
+
+        WIFIConnectionManager.getInstance(this).connect("869455049330216", "12345678");
+        //WifiManagerProxy.get().connect("869455049330216", "12345678");
 //        try {
 //            Thread.sleep(10000);
 //            WifiManagerProxy.get().disConnect("869455049330216");
@@ -38,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        WifiManagerProxy.get().disConnect("HugoiPhone");
+        WifiManagerProxy.get().disConnect("869455049330216");
 
     }
 }
