@@ -1,5 +1,6 @@
 package com.hello.wifi.tookit;
 
+import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
@@ -95,8 +96,7 @@ class WifiConnector {
     }
 
     // 查看以前是否也配置过这个网络
-    private WifiConfiguration isExsits(String SSID) {
-        checkInit();
+    public WifiConfiguration isExsits(String SSID) {
         List<WifiConfiguration> existingConfigs = wifiManager
                 .getConfiguredNetworks();
         for (WifiConfiguration existingConfig : existingConfigs) {
@@ -188,19 +188,52 @@ class WifiConnector {
                     }
                 }
 
+                // 如果wifi没开启的话就提示错误
+                if (wifiManager.getWifiState() == WifiManager.WIFI_STATE_DISABLED) {
+                    sendErrorMsg("WIFI 未开启");
+                    return;
+                }
+
+                // 开启wifi之后开始扫描附近的wifi列表
+                wifiManager.startScan();
+                Thread.sleep(500);
+                boolean hasSsIdWifi = false;
+                List<ScanResult> scanResults = wifiManager.getScanResults();
+                for (int i = 0; i < scanResults.size(); i++) {
+                    ScanResult scanResult = scanResults.get(i);
+                    if (TextUtils.equals(scanResult.SSID, ssid)) {
+                        hasSsIdWifi = true;
+                        break;
+                    }
+                }
+                // 如果就没这个wifi的话直接返回
+                if (!hasSsIdWifi) {
+                    sendErrorMsg("当前不存在指定的Wifi!");
+                    return;
+                }
+
+
                 //禁掉所有wifi
                 for (WifiConfiguration c : wifiManager.getConfiguredNetworks()) {
                     wifiManager.disableNetwork(c.networkId);
                 }
 
-                WifiConfiguration wifiConfig = createWifiInfo(ssid, password, type);
-                if (wifiConfig == null) {
-                    sendErrorMsg("wifiConfig is null!");
-                    return;
+                //看看当前wifi之前配置过没有
+                boolean enabled = false;
+                WifiConfiguration tempConfig = isExsits(ssid);
+                if (tempConfig != null) {
+                    enabled = wifiManager.enableNetwork(tempConfig.networkId, true);
+                } else {
+                    WifiConfiguration wifiConfig = createWifiInfo(ssid, password, type);
+                    if (wifiConfig == null) {
+                        sendErrorMsg("wifiConfig is null!");
+                        return;
+                    }
+
+                    int netID = wifiManager.addNetwork(wifiConfig);
+                    enabled = wifiManager.enableNetwork(netID, true);
                 }
 
-                int netID = wifiManager.addNetwork(wifiConfig);
-                boolean enabled = wifiManager.enableNetwork(netID, true);
                 if (enabled) {
                     sendSuccessMsg("连接成功! enabled = " + enabled);
                 } else {

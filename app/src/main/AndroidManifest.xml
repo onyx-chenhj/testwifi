@@ -23,7 +23,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".demo1.Demo1Activity">
-
         </activity>
     </application>
 

@@ -1,5 +1,7 @@
 package com.hello.wifi;
 
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -12,6 +14,8 @@ import com.hello.wifi.tookit.WifiManagerProxy;
 public class MainActivity extends AppCompatActivity {
 
     private WifiAutoConnectManager mWifiAutoConnectManager;
+    private BroadcastReceiver mWifiConnectBroadcastReceiver;
+    private IntentFilter mWifiConnectIntentFilter;
 
 
     @Override
@@ -29,6 +33,15 @@ public class MainActivity extends AppCompatActivity {
 //        }).start();
 
         test();
+
+
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mWifiConnectBroadcastReceiver);
     }
 
     private void test() {
