@@ -4,8 +4,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import com.hello.wifi.demo1.WifiAutoConnectManager;
-import com.hello.wifi.impl.WifiManagerProxy;
-import com.hello.wifi.interfaces.IWifiLogListener;
+import com.hello.wifi.tookit.IWifiConnectListener;
+import com.hello.wifi.tookit.WifiManagerProxy;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -31,18 +31,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void test() {
-        WifiManagerProxy.get().init(getApplication(), new IWifiLogListener() {
+        WifiManagerProxy.get().init(getApplication());
+        WifiManagerProxy.get().connect("102", "4001001111", new IWifiConnectListener() {
             @Override
-            public void onSuccess(String success) {
+            public void onConnectStart() {
 
             }
 
             @Override
-            public void onFail(String reason) {
+            public void onConnectEnd() {
+
+            }
+
+            @Override
+            public void onConnectLoading() {
+
+            }
+
+            @Override
+            public void onConnectSuccess() {
+
+            }
+
+            @Override
+            public void onConnectFail(String errorMsg) {
 
             }
         });
-        WifiManagerProxy.get().connect("102", "4001001111");
     }
 
 }
