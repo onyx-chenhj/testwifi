@@ -7,7 +7,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.util.List;
 
@@ -187,8 +186,6 @@ class WifiConnector {
                     sendErrorMsg("WIFI 未开启");
                     return;
                 }
-
-                Log.i("TAG", "wifiManager: 3");
 
                 // 开启wifi之后开始扫描附近的wifi列表
                 wifiManager.startScan();
