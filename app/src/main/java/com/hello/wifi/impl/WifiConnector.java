@@ -1,16 +1,15 @@
 package com.hello.wifi.impl;
 
-import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.hello.wifi.interfaces.IWifiLogListener;
 
-import java.util.ArrayList;
 import java.util.List;
 
 class WifiConnector {
@@ -111,9 +110,8 @@ class WifiConnector {
         return null;
     }
 
-    private WifiConfiguration createWifiInfo(String SSID, String Password,
-                                             WifiCipherType Type) {
-        checkInit();
+
+    public WifiConfiguration createWifiInfo(String SSID, String Password, WifiCipherType Type) {
         WifiConfiguration config = new WifiConfiguration();
         config.allowedAuthAlgorithms.clear();
         config.allowedGroupCiphers.clear();
@@ -121,12 +119,13 @@ class WifiConnector {
         config.allowedPairwiseCiphers.clear();
         config.allowedProtocols.clear();
         config.SSID = "\"" + SSID + "\"";
+        // config.SSID = SSID;
         // nopass
         if (Type == WifiCipherType.WIFICIPHER_NOPASS) {
+            // config.wepKeys[0] = "";
             config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-        }
-        // wep
-        if (Type == WifiCipherType.WIFICIPHER_WEP) {
+            // config.wepTxKeyIndex = 0;
+        } else if (Type == WifiCipherType.WIFICIPHER_WEP) {// wep
             if (!TextUtils.isEmpty(Password)) {
                 if (isHexWepKey(Password)) {
                     config.wepKeys[0] = Password;
@@ -138,22 +137,16 @@ class WifiConnector {
             config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
             config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
             config.wepTxKeyIndex = 0;
-        }
-        // wpa
-        if (Type == WifiCipherType.WIFICIPHER_WPA) {
+        } else if (Type == WifiCipherType.WIFICIPHER_WPA) {// wpa
             config.preSharedKey = "\"" + Password + "\"";
-            config.hiddenSSID = true;
-            config.allowedAuthAlgorithms
-                    .set(WifiConfiguration.AuthAlgorithm.OPEN);
+            config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
             config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
-            config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
-            config.allowedPairwiseCiphers
-                    .set(WifiConfiguration.PairwiseCipher.TKIP);
-            // 此处需要修改否则不能自动重联
-            // config.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
             config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-            config.allowedPairwiseCiphers
-                    .set(WifiConfiguration.PairwiseCipher.CCMP);
+            config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+            config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+            config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+            config.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+            config.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
             config.status = WifiConfiguration.Status.ENABLED;
         }
         return config;
@@ -199,45 +192,21 @@ class WifiConnector {
                     }
                 }
 
-                //根据传入的ssid pwd type创建 wifi config
-                WifiConfiguration wifiConfig = createWifiInfo(ssid, password, type);
+                //禁掉所有wifi
+                for (WifiConfiguration c : wifiManager.getConfiguredNetworks()) {
+                    wifiManager.disableNetwork(c.networkId);
+                }
 
+                WifiConfiguration wifiConfig = createWifiInfo("102", "4001001111", WifiCipherType.WIFICIPHER_WPA);
                 if (wifiConfig == null) {
-                    sendErrorMsg("wifiConfig is null!");
+                    Log.d("wifidemo", "wifiConfig is null!");
                     return;
                 }
-
-                // 重新扫描下最新的wifi信息，防止wifi信息已经变了但是 getScanResults还是使用旧的wifi信息
-                wifiManager.startScan();
-                // 线程休眠0.5秒  等待最新的扫描结果出来
-                Thread.sleep(500);
-                List<ScanResult> scanResults = wifiManager.getScanResults();
-                if (scanResults == null) {
-                    sendErrorMsg("没有扫描到可用的网络!");
-                    return;
-                }
-
-                List<String> ssIdList = new ArrayList<>();
-                for (int i = 0; i < scanResults.size(); i++) {
-                    ScanResult scanResult = scanResults.get(i);
-                    ssIdList.add(scanResult.SSID);
-                }
-
-                if(!ssIdList.contains(ssid)){
-                    sendErrorMsg("不存在指定SSID的 网络!");
-                    return;
-                }
-
-                WifiConfiguration tempConfig = isExsits(ssid);
-                //之前如果存在的网络, 那就删除掉重新连接一次 ,确保最新的ssid 和 pws
-                if (tempConfig != null) {
-                    wifiManager.removeNetwork(tempConfig.networkId);
-                }
+                Log.d("wifidemo", wifiConfig.SSID);
 
                 int netID = wifiManager.addNetwork(wifiConfig);
                 boolean enabled = wifiManager.enableNetwork(netID, true);
-                boolean connected = wifiManager.reconnect();
-                sendSuccessMsg("连接成功! enabled = " + enabled + " connected  =" + connected);
+                sendSuccessMsg("连接成功! enabled = " + enabled);
             } catch (Exception e) {
                 sendErrorMsg(e.getMessage());
                 e.printStackTrace();
