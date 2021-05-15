@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.util.List;
 
@@ -178,21 +179,16 @@ class WifiConnector {
                 // 如果之前没打开wifi,就去打开  确保wifi开关开了
                 openWifi();
                 iWifiConnectListener.onConnectStart();
-                // 开启wifi功能需要一段时间,每隔100ms检测一次，WIFI可用了就继续下面的操作
-                while (wifiManager.getWifiState() == WifiManager.WIFI_STATE_ENABLING) {
-                    try {
-                        // 为了避免程序一直while循环，让它睡个100毫秒检测……
-                        Thread.sleep(100);
-                    } catch (InterruptedException ie) {
-                        sendErrorMsg("ConnectRunnable InterruptedException =" + ie.getMessage());
-                    }
-                }
+                //开启wifi需要等系统wifi刷新1秒的时间
+                Thread.sleep(1000);
 
                 // 如果wifi没开启的话就提示错误
                 if (wifiManager.getWifiState() == WifiManager.WIFI_STATE_DISABLED) {
                     sendErrorMsg("WIFI 未开启");
                     return;
                 }
+
+                Log.i("TAG", "wifiManager: 3");
 
                 // 开启wifi之后开始扫描附近的wifi列表
                 wifiManager.startScan();
