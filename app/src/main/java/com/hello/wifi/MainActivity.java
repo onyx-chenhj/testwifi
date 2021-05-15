@@ -2,6 +2,7 @@ package com.hello.wifi;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
 import com.hello.wifi.demo1.WifiAutoConnectManager;
 import com.hello.wifi.tookit.IWifiConnectListener;
@@ -32,30 +33,20 @@ public class MainActivity extends AppCompatActivity {
 
     private void test() {
         WifiManagerProxy.get().init(getApplication());
-        WifiManagerProxy.get().connect("102", "4001001111", new IWifiConnectListener() {
+        WifiManagerProxy.get().connect("1023", "4001001111", new IWifiConnectListener() {
             @Override
             public void onConnectStart() {
-
-            }
-
-            @Override
-            public void onConnectEnd() {
-
-            }
-
-            @Override
-            public void onConnectLoading() {
-
+                Log.i("TAG", "onConnectStart: ");
             }
 
             @Override
             public void onConnectSuccess() {
-
+                Log.i("TAG", "onConnectSuccess: ");
             }
 
             @Override
             public void onConnectFail(String errorMsg) {
-
+                Log.i("TAG", "onConnectFail: " + errorMsg);
             }
         });
     }

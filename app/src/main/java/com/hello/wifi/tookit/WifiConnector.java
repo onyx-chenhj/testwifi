@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.util.List;
 
@@ -155,14 +154,6 @@ class WifiConnector {
         boolean bRet = true;
         if (!wifiManager.isWifiEnabled()) {
             bRet = wifiManager.setWifiEnabled(true);
-            // 如果wifi被关闭了，重新打开去搜索wifi 需要Loading， 给点Loading时间吧
-            try {
-                iWifiConnectListener.onConnectLoading();
-                Thread.sleep(2000);
-                iWifiConnectListener.onConnectEnd();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
         return bRet;
     }
@@ -202,16 +193,19 @@ class WifiConnector {
                     wifiManager.disableNetwork(c.networkId);
                 }
 
-                WifiConfiguration wifiConfig = createWifiInfo("102", "4001001111", WifiCipherType.WIFICIPHER_WPA);
+                WifiConfiguration wifiConfig = createWifiInfo(ssid, password, type);
                 if (wifiConfig == null) {
-                    Log.d("wifidemo", "wifiConfig is null!");
+                    sendErrorMsg("wifiConfig is null!");
                     return;
                 }
-                Log.d("wifidemo", wifiConfig.SSID);
 
                 int netID = wifiManager.addNetwork(wifiConfig);
                 boolean enabled = wifiManager.enableNetwork(netID, true);
-                sendSuccessMsg("连接成功! enabled = " + enabled);
+                if (enabled) {
+                    sendSuccessMsg("连接成功! enabled = " + enabled);
+                } else {
+                    sendErrorMsg("连接失败! enabled = false");
+                }
 
             } catch (Exception e) {
                 sendErrorMsg(e.getMessage());
