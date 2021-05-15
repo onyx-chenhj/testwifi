@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void test() {
         WifiManagerProxy.get().init(getApplication());
-        WifiManagerProxy.get().connect("1023", "4001001111", new IWifiConnectListener() {
+        WifiManagerProxy.get().connect("102", "4001001111", new IWifiConnectListener() {
             @Override
             public void onConnectStart() {
                 Log.i("TAG", "onConnectStart: ");
